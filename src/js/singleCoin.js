@@ -2,20 +2,84 @@ import React, { Component } from 'react';
 import '../scss/main.scss';
 import 'react-vis/dist/style.css'
 import { Row, Col, Preloader } from 'react-materialize';
-import { VerticalGridLines, HorizontalGridLines, XYPlot, LineSeries, XAxis, YAxis  } from 'react-vis';
-const linkAPI = 'https://min-api.cryptocompare.com/data/dayAvg?fsym=BTC&tsym=USD';
+import { VerticalGridLines, HorizontalGridLines, XYPlot, LineSeries, XAxis, YAxis } from 'react-vis';
 
-class GetCoinInfo extends Component {
+
+
+const Chart = ({ data }) => {
+    const priceChartData = [];
+    const openChartData = [];
+    const closeChartData = [];
+
+    const getDay = (timestamp) => {
+        var time = new Date(timestamp * 1000);
+        var month = time.getMonth() + 1;
+        var day = time.getDate();
+        var year = time.getFullYear();
+
+        return month + "/" + day + "/" + year
+
+    };
+
+    data.map(el => {
+        let y = (el.low + el.high) / 2;
+        let x = new Date(getDay(el.time));
+        priceChartData.push({x, y});
+        y = el.close;
+        closeChartData.push({x,y});
+        y = el.open;
+        openChartData.push({x,y})
+        return null
+    });
+
+    return (
+        <XYPlot xType="time" height={300} width={800}>
+            <HorizontalGridLines style={{stroke: '#B7E9ED'}} />
+            <VerticalGridLines style={{stroke: '#B7E9ED'}} />
+            <LineSeries
+                className="fourth-series"
+                data={priceChartData}
+                style={{
+                    strokeLinejoin: 'round',
+                    strokeWidth: 4
+                }}
+            />
+            <LineSeries data={openChartData} />
+            <LineSeries data={closeChartData} />
+            <XAxis
+                title="Date"
+                style={{
+                    line: {stroke: '#ADDDE1'},
+                    ticks: {stroke: '#ADDDE1'},
+                    text: {stroke: 'none', fill: '#6b6b76', fontWeight: 600}
+                }}
+            />
+            <YAxis />
+        </XYPlot>
+    )
+
+
+}
+
+class CoinInfo extends Component {
     constructor(props) {
         super(props);
         this.state = {
             data: false,
-            dataStatus: false
+            data2: false,
+            dataStatus: false,
+            dataStatus2: false
         }
     }
 
     componentDidMount() {
-        fetch(linkAPI)
+        console.log(this.props.crypto);
+        const linkAPI2 = `https://api.coinmarketcap.com/v2/ticker/${this.props.crypto}/`;
+        fetch(linkAPI2, {
+            headers: {
+                'X-CMC_PRO_API_KEY': '0efcb553-0e40-47ed-8295-f14a558a2dc3'
+            }
+        })
             .then( resp => {
                 if (resp.ok) {
                     return resp.json();
@@ -25,121 +89,86 @@ class GetCoinInfo extends Component {
             })
             .then(data => {
                 this.setState({
-                    data: data,
-                    dataStatus: true
+                    data2: data.data,
+                    dataStatus2: true
                 })
+                const linkAPI = `https://min-api.cryptocompare.com/data/histoday?fsym=${this.state.data2.symbol}&tsym=USD&limit=10`
+                fetch(linkAPI)
+                    .then( resp => {
+                        if (resp.ok) {
+                            return resp.json();
+                        } else {
+                            throw new Error("Blad sieci");
+                        }
+                    })
+                    .then(data => {
+                        this.setState({
+                            data: data.Data,
+                            dataStatus: true
+                        })
+                    })
+                    .catch( err => {
+                        console.log(err)
+                    });
             })
             .catch( err => {
                 console.log(err)
             })
+
     }
+
 
     render() {
         if (this.state.dataStatus === true) {
-            console.log(this.state.data);
             return (
-                <>{
-
-                  }</>
+                <div className="coin__container container z-depth-2">
+                    <CryptoDetails data={this.state.data2}/>
+                    <Chart data={this.state.data}/>
+                </div>
             )
         } else return <Preloader color="green" size='big'/>
-
     }
-
 };
 
-
-class GenerateChart extends Component {
-    render() {
-        const avgPrice = [
-            {x: 0, y: 8},
-            {x: 1, y: 5},
-            {x: 2, y: 4},
-            {x: 3, y: 9},
-            {x: 4, y: 1},
-            {x: 5, y: 7},
-            {x: 6, y: 6},
-            {x: 7, y: 3},
-            {x: 8, y: 2},
-            {x: 9, y: 0}
-        ];
-        const volume = [
-            {x: 0, y: 2},
-            {x: 1, y: 4},
-            {x: 2, y: 10},
-            {x: 3, y: 12},
-            {x: 4, y: 7},
-            {x: 5, y: 8},
-            {x: 6, y: 3},
-            {x: 7, y: 1},
-            {x: 8, y: 7},
-            {x: 9, y: 2}
-        ];
-        return (
-            <div className="App">
-                <XYPlot height={300} width={800}>
-                    <HorizontalGridLines style={{stroke: '#B7E9ED'}} />
-                    <VerticalGridLines style={{stroke: '#B7E9ED'}} />
-                    <LineSeries data={avgPrice} />
-                    <LineSeries
-                        className="fourth-series"
-                        data={volume}
-                        style={{
-                            strokeLinejoin: 'round',
-                            strokeWidth: 4
-                        }}
-                    />
-                    <XAxis
-                        title="Date"
-                        style={{
-                            line: {stroke: '#ADDDE1'},
-                            ticks: {stroke: '#ADDDE1'},
-                            text: {stroke: 'none', fill: '#6b6b76', fontWeight: 600}
-                        }}
-                    />
-                    <YAxis />
-                </XYPlot>
-            </div>
-        )
-    }
+const CryptoDetails = ({ data }) => {
+    return (
+        <Row>
+            <Col s={12}>
+                <Col s={3}>
+                    <h3>{data.name}</h3>
+                    <h6>{data.symbol}</h6>
+                </Col>
+                <Col s={9}>
+                    <Row><h5>${data.quotes.USD.price}</h5></Row>
+                    <Row>
+                        <Col s={3}>
+                            <h6>Market Cap</h6>
+                            <h6>${data.quotes.USD.market_cap}</h6>
+                        </Col>
+                        <Col s={3}>
+                            <h6>Volume (24h)</h6>
+                            <h6>${data.quotes.USD.volume_24h}</h6>
+                        </Col>
+                        <Col s={3}>
+                            <h6>Circulating Supply</h6>
+                            <h6>{data.total_supply} BTC</h6>
+                        </Col>
+                        <Col s={3}>
+                            <h6>Max Supply</h6>
+                            <h6>{data.max_supply} BTC</h6>
+                        </Col>
+                    </Row>
+                </Col>
+            </Col>
+        </Row>
+    )
 }
 
 
 class SingleCoin extends Component {
 
     render() {
-        return <div className="coin__container container z-depth-2">
-            <Row>
-                <Col s={12}>
-                    <Col s={3}>
-                        <h3>BITCOIN</h3>
-                        <h6>{this.props.match.params.coinId}</h6>
-                    </Col>
-                    <Col s={9}>
-                        <Row><h5>$ 4,473.58(-0.72%) 1BTC(20.72%)</h5></Row>
-                        <Row>
-                            <Col s={3}>
-                                <h6>Market Cap</h6>
-                                <h6>$77,774,471,400</h6>
-                            </Col>
-                            <Col s={3}>
-                                <h6>Volume (24h)</h6>
-                                <h6>$8 041 164 728</h6>
-                            </Col>
-                            <Col s={3}>
-                                <h6>Circulating Supply</h6>
-                                <h6>17,385,300 BTC</h6>
-                            </Col>
-                            <Col s={3}>
-                                <h6>Max Supply</h6>
-                                <h6>21,000,000 BTC</h6>
-                            </Col>
-                        </Row>
-                    </Col>
-                </Col>
-            </Row>
-            <GenerateChart/>
-        </div>
+        return <CoinInfo crypto={this.props.match.params.coinId}/>
     }
 }
 

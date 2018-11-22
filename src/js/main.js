@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Preloader} from "react-materialize";
+import {Preloader, Button, Icon} from "react-materialize";
 import {NavLink} from "react-router-dom";
 const linkAPI = 'https://api.coinmarketcap.com/v2/ticker/';
 
@@ -12,13 +12,14 @@ const Coin = ({idx, data}) => {
     return (
         <tr key={data.id}>
             <td>{idx}</td>
-            <td><NavLink to={"/singlecoin/" + data.symbol}>{data.name}</NavLink></td>
+            <td><NavLink to={"/singlecoin/" + data.id}>{data.name}</NavLink></td>
             <td>{data.symbol}</td>
             <td>${data.quotes.USD.price}</td>
             <td>${data.quotes.USD.market_cap}</td>
             <td>${data.total_supply}</td>
             <td>${data.quotes.USD.volume_24h}</td>
             <td className={colorClass}>{data.quotes.USD.percent_change_24h}%</td>
+            <td><Button waves='light'><Icon tiny>bookmarks</Icon></Button></td>
         </tr>
     );
 
@@ -88,6 +89,7 @@ class CryptoTable extends Component {
                 <th>Supply</th>
                 <th>Volume</th>
                 <th>%(24h)</th>
+                <th>Fav</th>
             </tr>
             </thead>
             <tbody>
