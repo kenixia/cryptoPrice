@@ -9,6 +9,22 @@ const Coin = ({idx, data}) => {
 
     const colorClass = data.quotes.USD.percent_change_24h > 0 ? "present-green" : "present-red";
 
+    const addToFavourite = (e, id) => {
+        let url = 'http://localhost:4000/fav/';
+        let data = {id: id,};
+
+        fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+            .then(response => console.log('Success:', JSON.stringify(response)))
+            .catch(error => console.error('Error:', error));
+    }
+
     return (
         <tr key={data.id}>
             <td>{idx}</td>
@@ -19,7 +35,7 @@ const Coin = ({idx, data}) => {
             <td>${data.total_supply}</td>
             <td>${data.quotes.USD.volume_24h}</td>
             <td className={colorClass}>{data.quotes.USD.percent_change_24h}%</td>
-            <td><Button waves='light'><Icon tiny>bookmarks</Icon></Button></td>
+            <td><Button name={data.id} onClick={(e)=> addToFavourite(e, data.id)} waves='light'><Icon tiny>bookmarks</Icon></Button></td>
         </tr>
     );
 

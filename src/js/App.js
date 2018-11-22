@@ -4,6 +4,7 @@ import { Header } from './header';
 import { Main } from './main'
 import { AppFooter } from './footer'
 import { SingleCoin } from './singleCoin'
+import { Fav } from './fav'
 import {
     HashRouter,
     Route,
@@ -20,6 +21,7 @@ class App extends Component {
                     <Switch>
                         <Route exact path='/' component={Main} />
                         <Route path='/singlecoin/:coinId' component={SingleCoin} />
+                        <Route path='/fav' component={Fav} />
                     </Switch>
                 <AppFooter/>
             </>
