@@ -1,23 +1,19 @@
 import React, { Component } from 'react';
 import '../scss/main.scss';
 import { NavLink } from 'react-router-dom';
+import {Navbar, NavItem} from 'react-materialize'
 
 class Header extends Component {
     render() {
         return (
-            <nav className="teal">
-                <div className="nav-wrapper container">
-                    <a href="/#" className="brand-logo">CryptoPrice</a>
-                    <ul id="nav-mobile" className="right hide-on-med-and-down">
-                        <li><NavLink to="/fav">Favourite</NavLink></li>
-                        {/*<li><a href="/singlecoin">Components</a></li>*/}
-                        {/*<li><a href="/singlecoin">JavaScript</a></li>*/}
-                    </ul>
-                </div>
-            </nav>
+            <Navbar className="teal" brand={`CryptoPrice`} right>
+                <NavItem><NavLink to="/#">Start</NavLink></NavItem>
+                <NavItem><NavLink to="/fav">Fav</NavLink></NavItem>
+            </Navbar>
 
         );
     }
 }
 
 export { Header };
+
